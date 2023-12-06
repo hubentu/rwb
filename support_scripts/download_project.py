@@ -16,12 +16,16 @@ def get_full_path(file, current_folder, folders):
     return os.path.join(*reversed(full_path), file["name"])
 
 def main():
+    cwd = os.path.dirname(os.path.abspath(__file__))
+
     parser = argparse.ArgumentParser(description='Download an Aster Data Access Project.')
     parser.add_argument("--project-id", type=str, nargs=1, required=True, help="The project ID to download.")
-    parser.add_argument("--exec", type=str, nargs=1, required=True, help="The executable name.", default="rwb.osx.x64")
+    parser.add_argument("--exec", type=str, nargs=1, required=False, help="The executable name.", default=["../rwb"])
     parser.add_argument("--verbose", default=False, action="store_true", help="Verbose output.")
     parser.add_argument("--no-dry-run", default=False, action="store_true", help="Don't actually download anything")
     parser.add_argument("--destination-path", type=str, nargs=1, required=False, help="The destination path to download the project to.")
+    parser.add_argument("--exclude", type=str, nargs='*', required=False, help="The folders excluded")
+    parser.add_argument("--include", type=str, nargs='*', required=False, help="The folders included")
 
     args = parser.parse_args(sys.argv[1:])
 
@@ -30,7 +34,16 @@ def main():
     verbose = args.verbose
     dry_run = not args.no_dry_run
     destination_path = args.destination_path.pop() if args.destination_path else os.getcwd()
-
+    folder_exclude = args.exclude
+    folder_include = args.include
+    
+    if executable:
+        executable = os.path.join(cwd, executable)
+    
+    if verbose:
+        print(f"folder included: {folder_include}")
+        print(f"folder_excluded: {folder_exclude}")
+    
     cmdline = f"{executable} project folders --project {project_id}"
 
     if verbose:
@@ -57,6 +70,17 @@ def main():
 
         print(f"Reading folder {folder_id} ({folder_to_read['fullFolderName']})")
 
+        if folder_include:
+            if folder_to_read['fullFolderName'] not in folder_include:
+                if verbose:
+                    print(f"Folder {folder_to_read['fullFolderName']} not included")
+                continue
+        
+        if folder_exclude:
+            if folder_to_read['fullFolderName'] in folder_exclude:
+                print(f"Folder {folder_to_read['fullFolderName']} excluded")
+                continue
+            
         if folder_id in read_folders:
             if verbose:
                 print(f"Folder {folder_id} already read, skipping")
