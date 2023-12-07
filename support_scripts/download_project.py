@@ -16,11 +16,9 @@ def get_full_path(file, current_folder, folders):
     return os.path.join(*reversed(full_path), file["name"])
 
 def main():
-    cwd = os.path.dirname(os.path.abspath(__file__))
-
     parser = argparse.ArgumentParser(description='Download an Aster Data Access Project.')
     parser.add_argument("--project-id", type=str, nargs=1, required=True, help="The project ID to download.")
-    parser.add_argument("--exec", type=str, nargs=1, required=False, help="The executable name.", default=["../rwb"])
+    parser.add_argument("--exec", type=str, nargs=1, required=False, help="The executable name.", default="rwb")
     parser.add_argument("--verbose", default=False, action="store_true", help="Verbose output.")
     parser.add_argument("--no-dry-run", default=False, action="store_true", help="Don't actually download anything")
     parser.add_argument("--destination-path", type=str, nargs=1, required=False, help="The destination path to download the project to.")
@@ -30,15 +28,12 @@ def main():
     args = parser.parse_args(sys.argv[1:])
 
     project_id = args.project_id[0]
-    executable = args.exec[0]
+    executable = args.exec
     verbose = args.verbose
     dry_run = not args.no_dry_run
     destination_path = args.destination_path.pop() if args.destination_path else os.getcwd()
     folder_exclude = args.exclude
     folder_include = args.include
-    
-    if executable:
-        executable = os.path.join(cwd, executable)
     
     if verbose:
         print(f"folder included: {folder_include}")
